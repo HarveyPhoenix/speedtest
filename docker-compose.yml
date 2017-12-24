@@ -2,9 +2,17 @@ version: "3"
 
 services:
   speedtest:
-    build: .
-    image: adolfintel/speedtest:${TAG:-latest}
+    image: harveyphoenix/speedtest:${TAG:-latest}
     ports:
-      - "8888:80"
-    volumes:
-      - .:/var/www/html
+      - "127.0.0.1:8888:80"
+    networks:
+      - speedtestnet
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200k"
+        max-file: "10"
+networks:
+    speedtestnet:
+      driver: bridge
+      enable_ipv6: false
