@@ -3,7 +3,7 @@ include_once('telemetry_settings.php');
 
 $ip=($_SERVER['REMOTE_ADDR']);
 $ua=($_SERVER['HTTP_USER_AGENT']);
-$lang=($_SERVER['HTTP_ACCEPT_LANGUAGE']);
+$lang=""; if(isset($_SERVER['HTTP_ACCEPT_LANGUAGE'])) $lang=($_SERVER['HTTP_ACCEPT_LANGUAGE']);
 $dl=($_POST["dl"]);
 $ul=($_POST["ul"]);
 $ping=($_POST["ping"]);
@@ -48,5 +48,26 @@ if($db_type=="mysql"){
     $stmt = $conn->prepare("INSERT INTO speedtest_users (ip,ua,lang,dl,ul,ping,jitter,log) VALUES (?,?,?,?,?,?,?,?)") or die("2");
     $stmt->execute(array($ip,$ua,$lang,$dl,$ul,$ping,$jitter,$log)) or die("3");
     $conn = null;
+}
+elseif($db_type=="csv"){
+    // Prepare the csv formatted string
+    date_default_timezone_set($timezone);
+    $date = date('Y-m-d H:i:s');
+    $str = '"' . $date . '",';
+    $str .= '"' . $ip . '",';
+    $str .= '"' . $ua . '",';
+    $str .= '"' . $dl . '",';
+    $str .= '"' . $ul . '",';
+    $str .= '"' . $ping . '",';
+    $str .= '"' . $jitter . '"' . "\n";
+
+    // Set header if this is a new file
+    if (!file_exists($Csv_File)) {
+        $header = '"date","ip","ua","download","upload","ping","jitter"' . "\n";
+        file_put_contents($Csv_File, $header, FILE_APPEND);
+    }
+
+    // Writting line to file
+    file_put_contents($Csv_File, $str, FILE_APPEND);
 }
 ?>
